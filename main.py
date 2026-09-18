@@ -14,8 +14,7 @@ ODDS_API_KEY = os.getenv("ODDS_API_KEY")
 app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
-templates.env.cache = None  # CHANGED: added this line — works around a known Jinja2/Python 3.14 caching bug
-
+templates.env.cache = None 
 def get_best_odds(match: dict) -> dict:
     best_odds = {}
 
@@ -135,18 +134,16 @@ def gui_matches(request: Request):
     try:
         response = requests.get(url, params=params, timeout=10)
     except requests.exceptions.RequestException:
-        # CHANGED: request now first positional arg, template name second, plain data dict third (no "request" key needed inside it)
+   
         return templates.TemplateResponse(request, "matches.html", {"matches": []})
 
     matches = response.json()
     aggregated = [get_best_odds(m) for m in matches]
-    # CHANGED: same fix as above
-    return templates.TemplateResponse(request, "matches.html", {"matches": aggregated})
+       return templates.TemplateResponse(request, "matches.html", {"matches": aggregated})
 
 @app.get("/gui/history/{match_id}")
 def gui_history(request: Request, match_id: int):
     db = SessionLocal()
     rows = db.query(OddsSnapshot).filter_by(match_id=match_id).order_by(OddsSnapshot.recorded_at).all()
     db.close()
-    # CHANGED: same fix as above
     return templates.TemplateResponse(request, "history.html", {"match_id": match_id, "rows": rows})
