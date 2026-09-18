@@ -2,7 +2,8 @@ import os
 import requests
 from datetime import datetime, timezone
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.templating import Jinja2Templates
 
 from database import SessionLocal, Match, OddsSnapshot
 
@@ -11,6 +12,9 @@ load_dotenv()
 ODDS_API_KEY = os.getenv("ODDS_API_KEY")
 
 app = FastAPI()
+
+templates = Jinja2Templates(directory="templates")
+templates.env.cache = None  # CHANGED: added this line — works around a known Jinja2/Python 3.14 caching bug
 
 def get_best_odds(match: dict) -> dict:
     best_odds = {}
@@ -118,3 +122,31 @@ def get_history(match_id: int):
         {"bookmaker": r.bookmaker, "outcome": r.outcome, "price": r.price, "recorded_at": r.recorded_at}
         for r in rows
     ]
+
+@app.get("/gui/matches")
+def gui_matches(request: Request):
+    url = "https://api.the-odds-api.com/v4/sports/soccer_epl/odds"
+    params = {
+        "apiKey": ODDS_API_KEY,
+        "regions": "uk",
+        "markets": "h2h",
+        "oddsFormat": "decimal",
+    }
+    try:
+        response = requests.get(url, params=params, timeout=10)
+    except requests.exceptions.RequestException:
+        # CHANGED: request now first positional arg, template name second, plain data dict third (no "request" key needed inside it)
+        return templates.TemplateResponse(request, "matches.html", {"matches": []})
+
+    matches = response.json()
+    aggregated = [get_best_odds(m) for m in matches]
+    # CHANGED: same fix as above
+    return templates.TemplateResponse(request, "matches.html", {"matches": aggregated})
+
+@app.get("/gui/history/{match_id}")
+def gui_history(request: Request, match_id: int):
+    db = SessionLocal()
+    rows = db.query(OddsSnapshot).filter_by(match_id=match_id).order_by(OddsSnapshot.recorded_at).all()
+    db.close()
+    # CHANGED: same fix as above
+    return templates.TemplateResponse(request, "history.html", {"match_id": match_id, "rows": rows})

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EPL Odds</title>
+    <style>
+        body { font-family: sans-serif; max-width: 900px; margin: 40px auto; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>EPL Odds — Best Prices</h1>
+    <table>
+        <tr>
+            <th>Match</th>
+            <th>Kickoff</th>
+            <th>Best Odds</th>
+        </tr>
+        {% for match in matches %}
+        <tr>
+            <td>{{ match.match }}</td>
+            <td>{{ match.commence_time }}</td>
+            <td>
+                {% for outcome, info in match.best_odds.items() %}
+                    {{ outcome }}: {{ info.price }} ({{ info.bookmaker }})<br>
+                {% endfor %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

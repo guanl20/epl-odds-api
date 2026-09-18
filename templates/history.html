@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Match History</title>
+    <style>
+        body { font-family: sans-serif; max-width: 900px; margin: 40px auto; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>Price History — Match #{{ match_id }}</h1>
+    <p><a href="/gui/matches">← Back to matches</a></p>
+    <table>
+        <tr>
+            <th>Bookmaker</th>
+            <th>Outcome</th>
+            <th>Price</th>
+            <th>Recorded At</th>
+        </tr>
+        {% for row in rows %}
+        <tr>
+            <td>{{ row.bookmaker }}</td>
+            <td>{{ row.outcome }}</td>
+            <td>{{ row.price }}</td>
+            <td>{{ row.recorded_at }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
