@@ -1,6 +1,6 @@
 import os
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,13 +18,17 @@ class Match(Base):
     away_team = Column(String)
     commence_time = Column(DateTime)
 
+    snapshots = relationship("OddsSnapshot", back_populates="match")
+
 class OddsSnapshot(Base):
     __tablename__ = "odds_snapshots"
     id = Column(Integer, primary_key=True)
-    match_id = Column(Integer)
+    match_id = Column(Integer, ForeignKey("matches.id"))
     bookmaker = Column(String)
     outcome = Column(String)
     price = Column(Float)
     recorded_at = Column(DateTime)
+
+    match = relationship("Match", back_populates="snapshots")
 
 Base.metadata.create_all(engine)
