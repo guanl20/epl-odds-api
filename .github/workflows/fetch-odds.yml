@@ -1,0 +1,13 @@
+name: Fetch EPL Odds Snapshot
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call snapshot endpoint
+        run: curl -X POST https://epl-odds-api.onrender.com/odds/epl/snapshot
